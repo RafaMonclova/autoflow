@@ -99,6 +99,10 @@ MIDDLEWARE = [
 
 AUTH_USER_MODEL = 'users.User'
 
+# Auth settings for Frontend UI
+LOGIN_URL = 'login'
+LOGIN_REDIRECT_URL = '/'
+
 # Configuración de Redis para Channels
 CHANNEL_LAYERS = {
     'default': {
