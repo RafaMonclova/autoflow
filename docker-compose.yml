@@ -1,0 +1,58 @@
+version: "3.9"
+
+services:
+  web:
+    build: .
+    container_name: autoflow
+    command: /entrypoint.sh
+    ports:
+      - "${WEB_PORT}:5012"
+    volumes:
+      - autoflow:/app/media/
+    depends_on:
+      - redis
+    env_file:
+      - .env
+    restart: unless-stopped
+    networks:
+      - internal
+
+  celery:
+    build: .
+    container_name: autoflow_celery
+    command: celery -A autoflow worker --loglevel=info
+    depends_on:
+      - redis
+    env_file:
+      - .env
+    restart: unless-stopped
+    networks:
+      - internal
+
+  beat:
+    build: .
+    container_name: autoflow_beat
+    command: celery -A autoflow beat --loglevel=info --scheduler django_celery_beat.schedulers:DatabaseScheduler
+    depends_on:
+      - redis
+    env_file:
+      - .env
+    restart: unless-stopped
+    networks:
+      - internal
+
+  redis:
+    image: redis:7
+    restart: unless-stopped
+    container_name: redis_autoflow
+    command: ["redis-server", "--requirepass", "${REDIS_PASSWORD}"]
+    # Puerto no expuesto al host; accesible solo en la red interna
+    networks:
+      - internal
+
+volumes:
+  autoflow:
+
+networks:
+  internal:
+    driver: bridge
