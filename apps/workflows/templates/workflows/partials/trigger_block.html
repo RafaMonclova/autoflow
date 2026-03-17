@@ -1,0 +1,50 @@
+<div id="trigger-block" class="bg-white shadow-sm hover:shadow-md rounded-2xl border border-gray-200 p-8 relative z-10 transition-all duration-200">
+    <form hx-post="{% url 'save_trigger_config' trigger.id %}" hx-target="#trigger-block" hx-swap="outerHTML">
+        {% csrf_token %}
+        <div class="flex items-center mb-6">
+            <div class="flex-shrink-0 h-12 w-12 bg-indigo-50 border border-indigo-100 rounded-xl flex items-center justify-center">
+                <svg class="h-6 w-6 text-indigo-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+                </svg>
+            </div>
+            <div class="ml-5 flex-1">
+                <h2 class="text-xl font-bold text-slate-900">1. Trigger (Disparador)</h2>
+                <p class="text-sm text-slate-500">El evento que inicia la ejecución del flujo.</p>
+            </div>
+        </div>
+
+        <div class="mb-5">
+            <label class="block text-sm font-semibold text-slate-700 mb-2">Tipo de Disparador</label>
+            <select name="trigger_type" class="block w-full py-2.5 px-4 border border-slate-300 bg-white rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 text-slate-800 transition-colors" onchange="const isCron = this.value === 'CRON'; document.getElementById('cron-config').style.display = isCron ? 'block' : 'none'; document.getElementById('webhook-config').style.display = !isCron ? 'block' : 'none';">
+                <option value="WEBHOOK" {% if trigger.trigger_type == 'WEBHOOK' %}selected{% endif %}>A través de un Webhook URL</option>
+                <option value="CRON" {% if trigger.trigger_type == 'CRON' %}selected{% endif %}>Programado en el tiempo (Cron)</option>
+            </select>
+        </div>
+        
+        <!-- Webhook Config -->
+        <div id="webhook-config" style="display: {% if trigger.trigger_type == 'WEBHOOK' %}block{% else %}none{% endif %};" class="bg-slate-50 rounded-xl p-5 border border-slate-100 mb-4 animate-fade-in">
+            <label class="block text-sm font-semibold text-slate-700 mb-2">Endpoint URL (POST JSON a esta dirección):</label>
+            <div class="flex rounded-md shadow-sm">
+                <input type="text" readonly value="{{ request.scheme }}://{{ request.get_host }}/api/hooks/{{ trigger.webhook_uuid }}/" class="flex-1 block w-full text-sm font-mono focus:ring-indigo-500 focus:border-indigo-500 min-w-0 rounded-l-lg bg-white border-slate-300 p-3 text-slate-600 border focus:outline-none">
+                <button type="button" onclick="navigator.clipboard.writeText(this.previousElementSibling.value); const s=this.querySelector('span'); const o=s.innerText; s.innerText='¡Copiado!'; setTimeout(()=>s.innerText=o, 2000);" class="inline-flex items-center px-4 py-2 border border-l-0 border-slate-300 rounded-r-lg bg-indigo-50 text-sm font-medium text-indigo-700 hover:bg-indigo-100 focus:outline-none transition-colors">
+                    <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"></path></svg>
+                    <span>Copiar</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Cron Config -->
+        <div id="cron-config" style="display: {% if trigger.trigger_type == 'CRON' %}block{% else %}none{% endif %};" class="bg-slate-50 rounded-xl p-5 border border-slate-100 mb-4 animate-fade-in">
+            <label class="block text-sm font-semibold text-slate-700 mb-2">Expresión Cron de Ejecución:</label>
+            <input type="text" name="cron_expression" value="{{ trigger.cron_expression|default:'* * * * *' }}" class="focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm text-sm font-mono border-slate-300 rounded-lg p-3 border" placeholder="Minuto Hora Día Mes DiaSemana">
+            <p class="mt-2 text-xs text-slate-500">Formato estándar crontab (ej. <code>*/15 * * * *</code> para cada 15 min). La Celery Beat se encargará de evaluarlo.</p>
+        </div>
+
+        <div class="flex items-center justify-end mt-2">
+            <span id="save-indicator-trigger" class="mr-4 transition-all"></span>
+            <button type="submit" onclick="const p=this.previousElementSibling; const o=p.innerText; p.innerHTML='<span class=\'text-emerald-500 font-medium\'>¡Guardado! ✓</span>'; setTimeout(()=>p.innerText=o, 2000);" class="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-slate-700 bg-slate-100 hover:bg-slate-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-slate-500">
+                Guardar Trigger
+            </button>
+        </div>
+    </form>
+</div>

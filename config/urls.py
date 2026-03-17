@@ -19,6 +19,7 @@ from django.urls import path, include
 from drf_spectacular.views import SpectacularAPIView, SpectacularRedocView, SpectacularSwaggerView
 from django.conf import settings
 from django.conf.urls.static import static
+from apps.engine.views import WebhookReceiveView
 
 
 urlpatterns = [
@@ -29,6 +30,12 @@ urlpatterns = [
     
     # Apps URLs
     path('apiweb/', include('apps.users.api.urls')),
+    
+    # Workflows UI
+    path('', include('apps.workflows.urls')),
+    
+    # Engine Webhooks
+    path('api/hooks/<uuid:uuid>/', WebhookReceiveView.as_view(), name='webhook_receive'),
 ]
 
 urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
