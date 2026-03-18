@@ -2,7 +2,6 @@ import os
 import django
 from celery import Celery
 from celery.signals import task_prerun, task_postrun, task_failure
-from celery.schedules import crontab
 
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'config.settings')
 django.setup()
@@ -11,13 +10,6 @@ app = Celery('autoflow')
 app.config_from_object('django.conf:settings', namespace='CELERY')
 app.autodiscover_tasks()
 
-# Configurar tareas periódicas
-# app.conf.beat_schedule = {
-#     'deactivate-expired-offers-every-hour': {
-#         'task': 'offers.tasks.deactivate_expired_offers',
-#         'schedule': crontab(minute=0),  # Se ejecuta cada hora en punto
-#     },
-# }
 
 
 @task_prerun.connect

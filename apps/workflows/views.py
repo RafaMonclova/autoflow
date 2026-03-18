@@ -6,6 +6,7 @@ from django.views.decorators.http import require_POST
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.decorators import login_required
 from .models import Workflow, Trigger, Action
+from .services.cron_scheduler import sync_cron_to_beat, delete_cron_beat_task, set_cron_beat_active
 
 class DashboardView(LoginRequiredMixin, ListView):
     model = Workflow
@@ -50,12 +51,22 @@ def toggle_workflow_status(request, pk):
     workflow = get_object_or_404(Workflow, pk=pk, user=request.user)
     workflow.is_active = not workflow.is_active
     workflow.save()
+    
+    # Sincronizar estado con Celery Beat si es CRON
+    if hasattr(workflow, 'trigger') and workflow.trigger.trigger_type == 'CRON':
+        set_cron_beat_active(workflow.trigger, workflow.is_active)
+    
     return render(request, 'workflows/partials/toggle_button.html', {'workflow': workflow})
 
 @login_required
 @require_POST
 def delete_workflow(request, pk):
     workflow = get_object_or_404(Workflow, pk=pk, user=request.user)
+    
+    # Limpiar PeriodicTask de Celery Beat si es CRON
+    if hasattr(workflow, 'trigger') and workflow.trigger.trigger_type == 'CRON':
+        delete_cron_beat_task(workflow.trigger)
+    
     workflow.delete()
     return redirect('dashboard')
 
@@ -63,6 +74,7 @@ def delete_workflow(request, pk):
 @require_POST
 def save_trigger_config(request, trigger_id):
     trigger = get_object_or_404(Trigger, pk=trigger_id, workflow__user=request.user)
+    old_type = trigger.trigger_type
     trigger_type = request.POST.get('trigger_type')
     
     if trigger_type in dict(Trigger.TRIGGER_TYPES):
@@ -70,6 +82,13 @@ def save_trigger_config(request, trigger_id):
         if trigger_type == 'CRON':
             trigger.cron_expression = request.POST.get('cron_expression', '* * * * *')
         trigger.save()
+        
+        # Sincronizar con Celery Beat
+        if trigger_type == 'CRON':
+            sync_cron_to_beat(trigger)
+        elif old_type == 'CRON' and trigger_type != 'CRON':
+            # Si cambió de CRON a otro tipo, eliminar la tarea periódica
+            delete_cron_beat_task(trigger)
         
     return render(request, 'workflows/partials/trigger_block.html', {'trigger': trigger})
 
