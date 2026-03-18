@@ -93,6 +93,16 @@ def save_trigger_config(request, trigger_id):
     return render(request, 'workflows/partials/trigger_block.html', {'trigger': trigger})
 
 @login_required
+@require_POST
+def rename_workflow(request, pk):
+    workflow = get_object_or_404(Workflow, pk=pk, user=request.user)
+    new_name = request.POST.get('name', '').strip()
+    if new_name:
+        workflow.name = new_name
+        workflow.save()
+    return render(request, 'workflows/partials/workflow_name.html', {'workflow': workflow})
+
+@login_required
 def add_action_fragment(request, pk):
     workflow = get_object_or_404(Workflow, pk=pk, user=request.user)
     last_action = workflow.actions.order_by('order').last()

@@ -21,4 +21,5 @@ urlpatterns = [
     path('htmx/action/delete/<int:action_id>/', views.delete_action, name='delete_action'),
     path('htmx/action/test-fetch/<int:action_id>/', views.test_action_fetch, name='test_action_fetch'),
     path('htmx/workflow/<int:pk>/variables/', views.available_variables, name='available_variables'),
+    path('htmx/workflow/<int:pk>/rename/', views.rename_workflow, name='rename_workflow'),
 ]
