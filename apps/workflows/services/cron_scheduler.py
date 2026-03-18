@@ -80,11 +80,17 @@ def delete_cron_beat_task(trigger):
 def set_cron_beat_active(trigger, is_active):
     """
     Activa o desactiva el PeriodicTask asociado a un trigger CRON
-    sin eliminarlo.
+    sin eliminarlo. Usa .save() para que PeriodicTasks.changed() notifique al scheduler.
     """
     task_name = _get_task_name(trigger)
-    updated = PeriodicTask.objects.filter(name=task_name).update(enabled=is_active)
-    
-    if updated:
+    try:
+        task = PeriodicTask.objects.get(name=task_name)
+        task.enabled = is_active
+        task.save()  # Dispara PeriodicTasks.changed() → Beat recarga el schedule
         state = "activado" if is_active else "desactivado"
         logger.info(f"PeriodicTask '{task_name}' {state}.")
+    except PeriodicTask.DoesNotExist:
+        # Si no existe y se está activando, creamos la tarea
+        if is_active:
+            sync_cron_to_beat(trigger)
+
