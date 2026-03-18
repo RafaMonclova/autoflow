@@ -20,7 +20,7 @@ services:
   celery:
     build: .
     container_name: autoflow_celery
-    command: celery -A autoflow worker --loglevel=info
+    command: celery -A config worker --loglevel=info
     depends_on:
       - redis
     env_file:
@@ -32,7 +32,7 @@ services:
   beat:
     build: .
     container_name: autoflow_beat
-    command: celery -A autoflow beat --loglevel=info --scheduler django_celery_beat.schedulers:DatabaseScheduler
+    command: celery -A config beat --loglevel=info --scheduler django_celery_beat.schedulers:DatabaseScheduler
     depends_on:
       - redis
     env_file:
