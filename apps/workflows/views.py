@@ -137,6 +137,11 @@ def save_action_config(request, action_id):
         config_data = {
             'url': request.POST.get('fetch_url', '')
         }
+    elif action_type == 'WEB_NOTIFICATION':
+        config_data = {
+            'title': request.POST.get('notif_title', ''),
+            'body': request.POST.get('notif_body', '')
+        }
         
     action.action_type = action_type
     action.config_template = config_data

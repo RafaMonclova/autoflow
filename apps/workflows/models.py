@@ -31,6 +31,7 @@ class Action(models.Model):
         ('TELEGRAM', 'Telegram'),
         ('EMAIL', 'Email'),
         ('HTTP_FETCH', 'HTTP Fetch'),
+        ('WEB_NOTIFICATION', 'Notificación Web'),
     )
     workflow = models.ForeignKey(Workflow, on_delete=models.CASCADE, related_name='actions')
     order = models.PositiveIntegerField(default=0)

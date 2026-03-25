@@ -55,9 +55,10 @@
 
 <script>
 document.addEventListener('alpine:init', () => {
-    Alpine.data('actionEditor', (initialTele, initialEmail) => ({
+    Alpine.data('actionEditor', (initialTele, initialEmail, initialNotif) => ({
         telegramText: initialTele || '',
         emailBody: initialEmail || '',
+        notifBody: initialNotif || '',
         lastFocusedInput: null,
         
         init() {
@@ -80,6 +81,7 @@ document.addEventListener('alpine:init', () => {
                 if (this.$refs.actionType.value === 'TELEGRAM') targetEl = this.$root.querySelector('[name="telegram_text"]');
                 else if (this.$refs.actionType.value === 'EMAIL') targetEl = this.$root.querySelector('[name="email_body"]');
                 else if (this.$refs.actionType.value === 'HTTP_FETCH') targetEl = this.$root.querySelector('[name="fetch_url"]');
+                else if (this.$refs.actionType.value === 'WEB_NOTIFICATION') targetEl = this.$root.querySelector('[name="notif_body"]');
             }
 
             if (targetEl) {

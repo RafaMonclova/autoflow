@@ -8,8 +8,9 @@ from apps.engine.parser import parse_template_with_payload, get_nested_value, ex
 # Importamos las integraciones
 from apps.integrations.telegram import send_telegram_message
 from apps.integrations.email import send_custom_email
+from apps.integrations.notification import send_web_notification
 
-def _execute_single_action(action_type, parsed_config, current_payload, step_key):
+def _execute_single_action(action_type, parsed_config, current_payload, step_key, user_id=None):
     """
     Ejecuta una acción individual. Si es HTTP_FETCH, inyecta su resultado en current_payload.
     """
@@ -46,6 +47,19 @@ def _execute_single_action(action_type, parsed_config, current_payload, step_key
             current_payload[step_key] = response.json()
         else:
             raise ValueError("Falta 'url' en el config parseado de HTTP_FETCH.")
+
+    elif action_type == 'WEB_NOTIFICATION':
+        title = parsed_config.get('title')
+        body = parsed_config.get('body')
+
+        if title and body:
+            if not user_id:
+                raise ValueError("No se pudo determinar el user_id del propietario del workflow.")
+            success = send_web_notification(user_id, title, body)
+            if not success:
+                raise Exception("Fallo al enviar la notificación web por WebSocket.")
+        else:
+            raise ValueError("Faltan 'title' o 'body' en el config parseado de WEB_NOTIFICATION.")
             
     else:
         raise ValueError(f"Tipo de acción desconocido o no implementado: '{action_type}'")
@@ -97,13 +111,13 @@ def execute_workflow_task(trigger_id, payload):
                         # Reemplazamos [*] por el índice actual numérico (.0, .1)
                         indexed_config = replace_wildcard_with_index(action.config_template, i)
                         parsed_config = parse_template_with_payload(indexed_config, current_payload)
-                        _execute_single_action(action.action_type, parsed_config, current_payload, f"{step_key}_{i}")
+                        _execute_single_action(action.action_type, parsed_config, current_payload, f"{step_key}_{i}", user_id=workflow.user_id)
                 else:
                     raise ValueError(f"La variable comodín '{wildcard_base}' no devuelve una lista válida para iterar.")
             else:
                 # Flujo normal para acciones que no sean bucles o en caso de diccionarios planos
                 parsed_config = parse_template_with_payload(action.config_template, current_payload)
-                _execute_single_action(action.action_type, parsed_config, current_payload, step_key)
+                _execute_single_action(action.action_type, parsed_config, current_payload, step_key, user_id=workflow.user_id)
 
         # 5. Actualizar el ExecutionHistory a "SUCCESS"
         execution.status = 'SUCCESS'

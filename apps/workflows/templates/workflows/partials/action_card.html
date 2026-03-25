@@ -1,4 +1,4 @@
-<div id="action-{{ action.id }}" class="action-block group relative" x-data="actionEditor('{{ action.config_template.text|escapejs }}', '{{ action.config_template.body|escapejs }}')">
+<div id="action-{{ action.id }}" class="action-block group relative" x-data="actionEditor('{{ action.config_template.text|escapejs }}', '{{ action.config_template.body|escapejs }}', '{{ action.config_template.body|escapejs }}')">
     <!-- El conector superior si no es el primer elemento generado dinámicamente -->
     <div class="h-10 w-1 bg-emerald-200 mx-auto -my-1 rounded-full relative z-0 hidden only-not-first"></div>
     
@@ -21,10 +21,11 @@
                 </div>
                 <div class="ml-4 flex-1">
                     <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Tipo de Acción</label>
-                    <select x-ref="actionType" name="action_type" class="block w-full py-2.5 px-4 pr-8 border border-slate-200 bg-slate-50 hover:bg-white rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 text-slate-800 font-semibold transition-colors" onchange="const val = this.value; document.getElementById('config-tel-{{ action.id }}').style.display = val === 'TELEGRAM' ? 'block' : 'none'; document.getElementById('config-email-{{ action.id }}').style.display = val === 'EMAIL' ? 'block' : 'none'; document.getElementById('config-fetch-{{ action.id }}').style.display = val === 'HTTP_FETCH' ? 'block' : 'none';">
+                    <select x-ref="actionType" name="action_type" class="block w-full py-2.5 px-4 pr-8 border border-slate-200 bg-slate-50 hover:bg-white rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 text-slate-800 font-semibold transition-colors" onchange="const val = this.value; document.getElementById('config-tel-{{ action.id }}').style.display = val === 'TELEGRAM' ? 'block' : 'none'; document.getElementById('config-email-{{ action.id }}').style.display = val === 'EMAIL' ? 'block' : 'none'; document.getElementById('config-fetch-{{ action.id }}').style.display = val === 'HTTP_FETCH' ? 'block' : 'none'; document.getElementById('config-notif-{{ action.id }}').style.display = val === 'WEB_NOTIFICATION' ? 'block' : 'none';">
                         <option value="TELEGRAM" {% if action.action_type == 'TELEGRAM' %}selected{% endif %}>🚀 Enviar Mensaje de Telegram</option>
                         <option value="EMAIL" {% if action.action_type == 'EMAIL' %}selected{% endif %}>✉️ Enviar Correo Electrónico</option>
                         <option value="HTTP_FETCH" {% if action.action_type == 'HTTP_FETCH' %}selected{% endif %}>🌐 Obtener Datos (HTTP Fetch)</option>
+                        <option value="WEB_NOTIFICATION" {% if action.action_type == 'WEB_NOTIFICATION' %}selected{% endif %}>🔔 Notificación Web (WebSocket)</option>
                     </select>
                 </div>
             </div>
@@ -91,6 +92,30 @@
                             <span class="text-slate-500 text-sm italic">Sin datos. Guarda la URL primero y pruébala.</span>
                             {% endif %}
                         </div>
+                    </div>
+                </div>
+
+                <!-- WEB NOTIFICATION CONFIG -->
+                <div id="config-notif-{{ action.id }}" style="display: {% if action.action_type == 'WEB_NOTIFICATION' %}block{% else %}none{% endif %};" class="animate-fade-in">
+                    <div class="mb-4">
+                        <div class="flex items-center gap-2 mb-3 p-2.5 bg-amber-50 border border-amber-200 rounded-lg">
+                            <svg class="w-5 h-5 text-amber-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                            <span class="text-xs text-amber-700">Ideal para probar flujos. La notificación llegará en tiempo real a tu navegador vía WebSocket.</span>
+                        </div>
+                    </div>
+                    <div class="mb-4">
+                        <label class="flex justify-between items-end mb-1">
+                            <span class="block text-sm font-semibold text-slate-700">Título <span class="text-red-500">*</span></span>
+                            <span class="text-xs text-indigo-600 font-mono bg-indigo-50 px-2 py-0.5 rounded border border-indigo-100">Soporta {% templatetag openvariable %}variable{% templatetag closevariable %}</span>
+                        </label>
+                        <input type="text" name="notif_title" value="{{ action.config_template.title|default:'' }}" class="focus:ring-emerald-500 focus:border-emerald-500 block w-full shadow-sm sm:text-sm border-slate-300 rounded-lg p-2.5 border" placeholder="Ej: Workflow ejecutado">
+                    </div>
+                    <div>
+                        <label class="flex justify-between items-end mb-1">
+                            <span class="block text-sm font-semibold text-slate-700">Cuerpo del mensaje <span class="text-red-500">*</span></span>
+                            <span class="text-xs text-indigo-600 font-mono bg-indigo-50 px-2 py-0.5 rounded border border-indigo-100">Soporta {% templatetag openvariable %}variable{% templatetag closevariable %}</span>
+                        </label>
+                        <textarea x-model="notifBody" name="notif_body" rows="4" class="shadow-sm focus:ring-emerald-500 focus:border-emerald-500 block w-full sm:text-sm border-slate-300 rounded-lg p-3 border font-mono resize-y" placeholder="¡El workflow se ha ejecutado correctamente!&#10;Datos recibidos: {% templatetag openvariable %}payload.info{% templatetag closevariable %}"></textarea>
                     </div>
                 </div>
 
