@@ -12,7 +12,7 @@ AutoFlow es una plataforma SaaS orientada a eventos que permite diseñar y ejecu
 
 Este proyecto demuestra la implementación de una **arquitectura distribuida y asíncrona**, capaz de ingerir datos desconocidos (Webhooks), aplanarlos dinámicamente y ejecutar tareas programadas (Crons) interactuando con APIs externas.
 
-> **🎥 Demo:** *(Nota para ti: Aquí te recomiendo subir un GIF de 10 segundos mostrando cómo arrastras una píldora visual al texto y envías un mensaje a Telegram).*
+![AutoFlow demo de flujo](assets/workflow.png)
 
 ---
 
