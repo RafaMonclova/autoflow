@@ -33,14 +33,3 @@ El proyecto está diseñado como un monolito modular con separación estricta de
 1. `workflows`: Aplicación frontend y gestión de configuración en base de datos.
 2. `engine`: Motor de procesamiento asíncrono, flattening de JSON y parser dinámico.
 3. `integrations`: Capa de servicios aislada para la comunicación con APIs externas (Telegram, SMTP, etc.).
-
----
-
-## 🚀 Instalación y Despliegue Local (Docker)
-
-El proyecto está completamente dockerizado para facilitar su evaluación. Solo necesitas tener instalado **Docker** y **Docker Compose**.
-
-### 1. Clonar el repositorio
-```bash
-git clone [https://github.com/](https://github.com/)[tu-usuario]/autoflow.git
-cd autoflow
