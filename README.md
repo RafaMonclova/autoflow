@@ -10,6 +10,8 @@
 
 AutoFlow es una plataforma SaaS orientada a eventos que permite diseñar y ejecutar flujos de trabajo automatizados sin escribir código (estilo Zapier o Make). 
 
+![AutoFlow](assets/cover.png)
+
 Este proyecto demuestra la implementación de una **arquitectura distribuida y asíncrona**, capaz de ingerir datos desconocidos (Webhooks), aplanarlos dinámicamente y ejecutar tareas programadas (Crons) interactuando con APIs externas.
 
 ![AutoFlow demo de flujo](assets/workflow.png)
