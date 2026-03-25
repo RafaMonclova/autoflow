@@ -1,6 +1,4 @@
 import logging
-from channels.layers import get_channel_layer
-from asgiref.sync import async_to_sync
 
 logger = logging.getLogger(__name__)
 
@@ -10,6 +8,10 @@ def send_web_notification(user_id, title, body):
     Envía una notificación en tiempo real al navegador del usuario
     a través del WebSocket (NotificacionConsumer).
     """
+    # Import lazy para evitar error de importación circular con channels
+    from channels.layers import get_channel_layer
+    from asgiref.sync import async_to_sync
+
     channel_layer = get_channel_layer()
 
     if not channel_layer:

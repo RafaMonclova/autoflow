@@ -146,7 +146,9 @@ def save_action_config(request, action_id):
     action.action_type = action_type
     action.config_template = config_data
     action.save()
-    return HttpResponse('<span class="text-emerald-600 text-sm font-medium mr-4 flex items-center"><svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>¡Guardado!</span>')
+    response = HttpResponse('<span class="text-emerald-600 text-sm font-medium mr-4 flex items-center"><svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>¡Guardado!</span>')
+    response['HX-Trigger'] = 'action-saved'
+    return response
 
 @login_required
 @require_POST
@@ -163,12 +165,19 @@ from apps.engine.utils import flatten_json
 def test_action_fetch(request, action_id):
     action = get_object_or_404(Action, pk=action_id, workflow__user=request.user)
     
+    # Guardar URL del formulario antes de probar
+    form_url = request.POST.get('fetch_url', '').strip()
+    if form_url:
+        action.action_type = 'HTTP_FETCH'
+        action.config_template = {'url': form_url}
+        action.save()
+
     if action.action_type != 'HTTP_FETCH':
         return HttpResponse('<span class="text-red-600 text-sm">Acción no es HTTP Fetch</span>')
         
     url = action.config_template.get('url')
     if not url:
-        return HttpResponse('<span class="text-red-600 text-sm">URL no configurada. Guárdala primero.</span>')
+        return HttpResponse('<span class="text-red-600 text-sm">URL no configurada.</span>')
         
     try:
         response = requests.get(url, timeout=10)
@@ -179,7 +188,9 @@ def test_action_fetch(request, action_id):
         action.save()
         
         message = f"✅ Datos obtenidos"
-        return HttpResponse(f'<span class="text-emerald-600 text-sm font-medium">{message}</span>')
+        resp = HttpResponse(f'<span class="text-emerald-600 text-sm font-medium">{message}</span>')
+        resp['HX-Trigger'] = 'action-saved'
+        return resp
     except Exception as e:
         return HttpResponse(f'<span class="text-red-600 text-sm">❌ Error: {str(e)}</span>')
 
