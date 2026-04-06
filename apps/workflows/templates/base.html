@@ -56,7 +56,7 @@
     </nav>
 
     <!-- Main Content Layout -->
-    <main class="max-w-6xl mx-auto py-10 px-4 sm:px-6 lg:px-8">
+    <main class="{% block main_class %}max-w-6xl mx-auto py-10 px-4 sm:px-6 lg:px-8{% endblock %}">
         {% block content %}{% endblock %}
     </main>
 
