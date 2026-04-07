@@ -1,4 +1,4 @@
-<div id="action-{{ action.id }}" class="action-block group relative flex flex-row items-center flex-shrink-0" x-data="actionEditor('{{ action.config_template.text|escapejs }}', '{{ action.config_template.body|escapejs }}', '{{ action.config_template.body|escapejs }}')">
+<div id="action-{{ action.id }}" class="action-block group relative flex flex-row items-center flex-shrink-0" data-action-id="{{ action.id }}" x-data="actionEditor('{{ action.config_template.text|escapejs }}', '{{ action.config_template.body|escapejs }}', '{{ action.config_template.body|escapejs }}')">
     <!-- Conector horizontal con flecha -->
     <div class="flex-shrink-0 flex items-center" style="width: 60px;">
         <div class="flex-1 h-0.5 bg-gradient-to-r from-emerald-300 to-emerald-200 rounded-full"></div>
@@ -28,6 +28,10 @@
                 
                 <!-- Header Acción -->
                 <div class="flex items-center mb-6 pb-6 border-b border-gray-100">
+                    <!-- Drag handle -->
+                    <div class="drag-handle flex-shrink-0 cursor-grab active:cursor-grabbing p-1 -ml-2 mr-2 text-slate-300 hover:text-slate-500 transition-colors" title="Arrastra para reordenar">
+                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path d="M7 2a2 2 0 1 0 0 4 2 2 0 0 0 0-4zm6 0a2 2 0 1 0 0 4 2 2 0 0 0 0-4zM7 8a2 2 0 1 0 0 4 2 2 0 0 0 0-4zm6 0a2 2 0 1 0 0 4 2 2 0 0 0 0-4zM7 14a2 2 0 1 0 0 4 2 2 0 0 0 0-4zm6 0a2 2 0 1 0 0 4 2 2 0 0 0 0-4z"/></svg>
+                    </div>
                     <div class="flex-shrink-0 h-10 w-10 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center font-bold text-lg shadow-inner">
                         {% if loop_counter %}{{ loop_counter }}{% else %}*{% endif %}
                     </div>

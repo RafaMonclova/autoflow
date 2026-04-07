@@ -6,6 +6,7 @@ from django.views.decorators.http import require_POST
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.decorators import login_required
 from .models import Workflow, Trigger, Action
+from django.db.models import F
 from .services.cron_scheduler import sync_cron_to_beat, delete_cron_beat_task, set_cron_beat_active
 
 class DashboardView(LoginRequiredMixin, ListView):
@@ -105,13 +106,34 @@ def rename_workflow(request, pk):
 @login_required
 def add_action_fragment(request, pk):
     workflow = get_object_or_404(Workflow, pk=pk, user=request.user)
-    last_action = workflow.actions.order_by('order').last()
-    next_order = last_action.order + 1 if last_action else 0
+    
+    # Obtener tipo de acción y posición del request
+    action_type = request.GET.get('action_type') or request.POST.get('action_type', 'TELEGRAM')
+    position = request.GET.get('position') or request.POST.get('position')
+    
+    # Configuración por defecto según tipo
+    default_configs = {
+        'TELEGRAM': {'chat_id': '', 'text': ''},
+        'EMAIL': {'to_email': '', 'subject': '', 'body': ''},
+        'HTTP_FETCH': {'url': ''},
+        'WEB_NOTIFICATION': {'title': '', 'body': ''},
+    }
+    config = default_configs.get(action_type, {})
+    
+    if position is not None:
+        position = int(position)
+        # Desplazar acciones existentes que estén en esa posición o después
+        workflow.actions.filter(order__gte=position).update(order=F('order') + 1)
+        new_order = position
+    else:
+        last_action = workflow.actions.order_by('order').last()
+        new_order = last_action.order + 1 if last_action else 0
+    
     action = Action.objects.create(
         workflow=workflow,
-        order=next_order,
-        action_type='TELEGRAM',
-        config_template={"chat_id": "", "text": ""}
+        order=new_order,
+        action_type=action_type,
+        config_template=config
     )
     return render(request, 'workflows/partials/action_card.html', {'action': action, 'workflow': workflow})
 
@@ -156,6 +178,20 @@ def delete_action(request, action_id):
     action = get_object_or_404(Action, pk=action_id, workflow__user=request.user)
     action.delete()
     return HttpResponse('')
+
+@login_required
+@require_POST
+def reorder_actions(request, pk):
+    """Recibe un JSON con la lista ordenada de action IDs y actualiza el orden."""
+    workflow = get_object_or_404(Workflow, pk=pk, user=request.user)
+    try:
+        data = json.loads(request.body)
+        action_ids = data.get('action_ids', [])
+        for index, action_id in enumerate(action_ids):
+            workflow.actions.filter(pk=action_id).update(order=index)
+        return JsonResponse({'status': 'ok'})
+    except (json.JSONDecodeError, KeyError):
+        return JsonResponse({'status': 'error'}, status=400)
 
 import requests
 from apps.engine.utils import flatten_json
